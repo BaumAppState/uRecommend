@@ -1,0 +1,122 @@
+body{
+    background-color: #FFD700;
+}
+
+#tokenSection{
+    display: none;
+}
+
+#currentPollSection{
+    display: none;
+}
+
+.container {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    grid-template-rows: repeat(2, 1fr);
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    width: 100vh;
+    background-color: #FFFFFF;
+}
+
+.button {
+    width: calc(100% - 20px);
+    height: calc(100% - 20px);
+    margin: 10px;
+    aspect-ratio: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.button img {
+    height: 65%;
+    max-width: 70%;
+    object-fit: contain;
+}
+
+.button .title {
+    font-size: 1.2em;
+    font-weight: bold;
+    margin: 20px 0;
+}
+
+.button .artist {
+    font-size: 1em;
+    margin: 0px 0;
+}
+
+.blue {
+    background-color: #2EC6FF;
+}
+
+.blue:hover {
+    background-color: #249ECC
+}
+
+.yellow {
+    background-color: #FFFE2E;
+}
+
+.yellow:hover {
+    background-color: #CCCB24
+}
+
+.red {
+    background-color: #FF0000;
+}
+
+.red:hover {
+    background-color: #CC0000
+}
+
+.purple {
+    background-color: #FA2EFF;
+}
+
+.purple:hover {
+    background-color: #C824CC
+}
+
+.grey {
+    background-color: #CCCCCC;
+}
+
+#albumImage{
+    width: 300px;
+    float: left;
+    margin: 20px;
+}
+
+#trackTitle{
+    font-size: 2em;
+}
+
+#trackArtist{
+    font-size: 1em;
+}
+
+.welcomeText{
+    font-size: 2em;
+}
+
+h2{
+    font-size: 4em;
+    font-weight: bold;
+    font-family: 'Impact', sans-serif;
+}
+
+#progress-bar-container {
+    width: 65%;
+    height: 20px;
+    background-color: #ddd;
+}
+  
+#progress-bar {
+    width: 0%;
+    height: 100%;
+    background-color: #000000;
+}
