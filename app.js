@@ -1,4 +1,4 @@
-var redirect_uri = "http://127.0.0.1:5500/index.html";
+var redirect_uri = "urecommend.up.railway.app/index.html";
 var cpuDeviceId = "6865a44f5e52deaa8b860e25ab6613f4d7a943f0"; 
 
 var client_id = "b1d853e60aac443fae77ccd132b71b04"; 
@@ -8,7 +8,7 @@ var access_token = null;
 var refresh_token = null;
 var currentPlaylist = "";
 var radioButtons = [];
-
+var intervalId = "";
 var currentSongProgress;
 var currentSongId = "";
 var songOneId = "";
@@ -30,6 +30,23 @@ const TRACKS = "https://api.spotify.com/v1/playlists/{{PlaylistId}}/tracks";
 const CURRENTLYPLAYING = "https://api.spotify.com/v1/me/player/currently-playing";
 const SHUFFLE = "https://api.spotify.com/v1/me/player/shuffle";
 
+const mysql = require('mysql');
+const connection = mysql.createConnection({
+    host: 'localhost',
+    user: 'root',
+    password: '',
+    database: 'test'
+})
+
+connection.connect(function(err) {
+    if (err) {
+        console.error("Error connecting: " + err.stack);
+        return;
+    }
+    console.log("Connected as id " + connection.threadId);
+})
+
+
 function onPageLoad(){
     if ( window.location.search.length > 0 ){
         handleRedirect();
@@ -46,7 +63,7 @@ function onPageLoad(){
             refreshDevices();
             refreshPlaylists();
             //currentlyPlaying();
-			setInterval(currentlyPlaying, 1000); //continuously updates every 2000 ms
+			intervalId = setInterval(currentlyPlaying, 1000); //continuously updates every 2000 ms
 			//nextFourSongs();
         }
     }
@@ -241,22 +258,39 @@ function handleCurrentlyPlayingResponse(){
             document.getElementById("albumImage").src = data.item.album.images[0].url;
             document.getElementById("trackTitle").innerHTML = data.item.name;
             document.getElementById("trackArtist").innerHTML = data.item.artists[0].name;
+            currentSongId = data.item.id;
 			updateProgressBar();
 			nextFourSongs();
+
+            //Ensures that if someone has already voted, the buttons won't be clickable if the user refreshes the page
+            if ( sessionStorage.getItem("lastvotedId") != null && currentSongId == sessionStorage.getItem("lastvotedId") ) {
+                document.querySelectorAll('.button').forEach(function(element) {
+                    element.classList.add('grey');
+                    element.onclick = null;
+                });
+            } else {
+                document.querySelectorAll('.button').forEach(function(element) {
+                    element.classList.remove('grey');
+                });
+                //document.getElementById("blueButt").addEventListener("click", voteForBlue());
+                //document.getElementById("yellowButt").addEventListener("click", voteForYellow());
+                //document.getElementById("redButt").addEventListener("click", voteForRed());
+                //document.getElementById("purpleButt").addEventListener("click", voteForPurple());
+            }
         }
 
 
         if ( data.device != null ){
             // select device
             currentDevice = data.device.id;
-            document.getElementById('devices').value=currentDevice;
+            //document.getElementById('devices').value=currentDevice;
         }
 
         if ( data.context != null ){
             // select playlist
-            currentPlaylist = data.context.uri;
-            currentPlaylist = currentPlaylist.substring( currentPlaylist.lastIndexOf(":") + 1,  currentPlaylist.length );
-            document.getElementById('playlists').value=currentPlaylist;
+            //currentPlaylist = data.context.uri;
+            //currentPlaylist = currentPlaylist.substring( currentPlaylist.lastIndexOf(":") + 1,  currentPlaylist.length );
+            //document.getElementById('playlists').value=currentPlaylist;
         }
     }
     else if ( this.status == 204 ){
@@ -271,6 +305,14 @@ function handleCurrentlyPlayingResponse(){
     }
 }
 
+function deactiveButtons() {
+
+}
+
+function activateButtons() {
+
+}
+
 function nextFourSongs(){
     callApi( "GET", QUEUE, null, handleNextFourSongsResponse );
 }
@@ -280,26 +322,29 @@ function handleNextFourSongsResponse(){
     if ( this.status == 200 ){
         var data = JSON.parse(this.responseText);
         console.log(data);
-        if ( data.queue[0] != null && data.queue[1] != null && data.queue[2] != null && data.queue[3] != null ){
-            document.getElementById("songOneImage").src = data.queue[0].album.images[0].url;
-            document.getElementById("songOneTitle").innerHTML = data.queue[0].name;
-            document.getElementById("songOneArtist").innerHTML = data.queue[0].artists[0].name;
-			songOneId = data.queue[0].id;
+        if ( data.queue[0] != null && data.queue[1] != null &&
+             data.queue[2] != null && data.queue[3] != null &&
+             data.queue[4] != null ) {
+                
+            document.getElementById("songOneImage").src = data.queue[1].album.images[0].url;
+            document.getElementById("songOneTitle").innerHTML = data.queue[1].name;
+            document.getElementById("songOneArtist").innerHTML = data.queue[1].artists[0].name;
+			songOneId = data.queue[1].id;
 
-			document.getElementById("songTwoImage").src = data.queue[1].album.images[0].url;
-            document.getElementById("songTwoTitle").innerHTML = data.queue[1].name;
-            document.getElementById("songTwoArtist").innerHTML = data.queue[1].artists[0].name;
-			songTwoId = data.queue[1].id;
+			document.getElementById("songTwoImage").src = data.queue[2].album.images[0].url;
+            document.getElementById("songTwoTitle").innerHTML = data.queue[2].name;
+            document.getElementById("songTwoArtist").innerHTML = data.queue[2].artists[0].name;
+			songTwoId = data.queue[2].id;
 
-			document.getElementById("songThreeImage").src = data.queue[2].album.images[0].url;
-            document.getElementById("songThreeTitle").innerHTML = data.queue[2].name;
-            document.getElementById("songThreeArtist").innerHTML = data.queue[2].artists[0].name;
-			songThreeId = data.queue[2].id;
+			document.getElementById("songThreeImage").src = data.queue[3].album.images[0].url;
+            document.getElementById("songThreeTitle").innerHTML = data.queue[3].name;
+            document.getElementById("songThreeArtist").innerHTML = data.queue[3].artists[0].name;
+			songThreeId = data.queue[3].id;
 
-			document.getElementById("songFourImage").src = data.queue[3].album.images[0].url;
-            document.getElementById("songFourTitle").innerHTML = data.queue[3].name;
-            document.getElementById("songFourArtist").innerHTML = data.queue[3].artists[0].name;
-			songFourId = data.queue[3].id;
+			document.getElementById("songFourImage").src = data.queue[4].album.images[0].url;
+            document.getElementById("songFourTitle").innerHTML = data.queue[4].name;
+            document.getElementById("songFourArtist").innerHTML = data.queue[4].artists[0].name;
+			songFourId = data.queue[4].id;
         }
 
 
@@ -376,34 +421,60 @@ function songFourToQueue() {
 
 //Toggles shuffle setting to true
 function shuffleTrue() {
-	callApi( "PUT", SHUFFLE + "?state=true&device_id=" + deviceId(), null, handleApiResponse );
+	callApi( "PUT", SHUFFLE + "?state=true", null, handleApiResponse );
 }
 
 //Toggles shuffle setting to false
 function shuffleFalse() {
-	callApi( "PUT", SHUFFLE + "?state=false&device_id=" + deviceId(), null, handleApiResponse );
+	callApi( "PUT", SHUFFLE + "?state=false", null, handleApiResponse );
 }
 
 //Reshuffles songs that will play next by toggling shuffle off then on again
 function reshuffleSongs() {
+    clearInterval(intervalId); //cancel the continuous updating of currentlyPlaying()
 	shuffleFalse();
 	//Uses setTimeout to wait 1000ms (1 second) before setting shuffle back to true
 	//This is to ensure spotify has enough time to recieve the request and change the setting
 	setTimeout(shuffleTrue(), 1000);
+    intervalId = setInterval(currentlyPlaying, 1000); //restart continuous currentlyPlaying()
 }
 
 function voteForBlue() {
+    document.querySelectorAll('.button').forEach(function(element) {
+        element.classList.add('grey');
+        element.onclick = null;
+    });
 
+    sessionStorage.setItem("lastvotedId", currentSongId);
+    alert("Your vote for Blue has been counted.");
 }
 
 function voteForYellow() {
-	
+	document.querySelectorAll('.button').forEach(function(element) {
+        element.classList.add('grey');
+        element.onclick = null;
+    });
+    
+    sessionStorage.setItem("lastvotedId", currentSongId);
+    alert("Your vote for Yellow has been counted.");
 }
 
 function voteForRed() {
-	
+	document.querySelectorAll('.button').forEach(function(element) {
+        element.classList.add('grey');
+        element.onclick = null;
+    });
+    
+    sessionStorage.setItem("lastvotedId", currentSongId);
+    alert("Your vote for Red has been counted.");
 }
 
 function voteForPurple() {
-	
+	document.querySelectorAll('.button').forEach(function(element) {
+        element.classList.add('grey');
+        element.onclick = null;
+    });
+    
+    sessionStorage.setItem("lastvotedId", currentSongId);
+    alert("Your vote for Purple has been counted.");
 }

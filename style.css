@@ -1,16 +1,27 @@
-body{
+body {
     background-color: #FFD700;
 }
 
-#tokenSection{
+#tokenSection {
     display: none;
 }
 
-#currentPollSection{
+#currentPollSection {
     display: none;
 }
 
 .container {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    grid-template-rows: repeat(2, 1fr);
+    align-items: center;
+    justify-content: center;
+    height: 150vh;
+    width: 100vh;
+    background-color: #FFFFFF;
+}
+
+.containerTwo {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
     grid-template-rows: repeat(2, 1fr);
@@ -85,25 +96,30 @@ body{
     background-color: #CCCCCC;
 }
 
-#albumImage{
+#albumImage {
     width: 300px;
     float: left;
     margin: 20px;
 }
 
-#trackTitle{
+#trackTitle {
     font-size: 2em;
 }
 
-#trackArtist{
+#trackArtist {
     font-size: 1em;
 }
 
-.welcomeText{
+#headerLogo {
+    width: 300px;
+    margin: 20px;
+}
+
+.welcomeText {
     font-size: 2em;
 }
 
-h2{
+h2 {
     font-size: 4em;
     font-weight: bold;
     font-family: 'Impact', sans-serif;
