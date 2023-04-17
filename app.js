@@ -1,4 +1,4 @@
-var redirect_uri = "https://urecommend.up.railway.app/index.html";
+var redirect_uri = "https://urecommend.up.railway.app";
 var cpuDeviceId = "6865a44f5e52deaa8b860e25ab6613f4d7a943f0"; 
 
 var client_id = "b1d853e60aac443fae77ccd132b71b04"; 
