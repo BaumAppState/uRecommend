@@ -1,4 +1,4 @@
-var redirect_uri = "http://urecommend.up.railway.app/index.html";
+var redirect_uri = "https://urecommend.up.railway.app/index.html";
 var cpuDeviceId = "6865a44f5e52deaa8b860e25ab6613f4d7a943f0"; 
 
 var client_id = "b1d853e60aac443fae77ccd132b71b04"; 
@@ -30,6 +30,7 @@ const TRACKS = "https://api.spotify.com/v1/playlists/{{PlaylistId}}/tracks";
 const CURRENTLYPLAYING = "https://api.spotify.com/v1/me/player/currently-playing";
 const SHUFFLE = "https://api.spotify.com/v1/me/player/shuffle";
 
+/**
 const mysql = require('mysql');
 const connection = mysql.createConnection({
     host: 'localhost',
@@ -45,7 +46,7 @@ connection.connect(function(err) {
     }
     console.log("Connected as id " + connection.threadId);
 })
-
+*/
 
 function onPageLoad(){
     if ( window.location.search.length > 0 ){
