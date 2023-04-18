@@ -11,10 +11,9 @@ body {
 }
 
 .container {
-    display: grid;
+    display: flex;
     grid-template-columns: repeat(2, 1fr);
     grid-template-rows: repeat(2, 1fr);
-    align-items: center;
     justify-content: center;
     height: 150vh;
     width: 100vh;

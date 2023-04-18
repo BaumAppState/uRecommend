@@ -1,4 +1,4 @@
-var redirect_uri = "https://urecommend.up.railway.app";
+var redirect_uri = "http://urecommend.up.railway.app";
 var cpuDeviceId = "6865a44f5e52deaa8b860e25ab6613f4d7a943f0"; 
 
 var client_id = "b1d853e60aac443fae77ccd132b71b04"; 
@@ -30,23 +30,9 @@ const TRACKS = "https://api.spotify.com/v1/playlists/{{PlaylistId}}/tracks";
 const CURRENTLYPLAYING = "https://api.spotify.com/v1/me/player/currently-playing";
 const SHUFFLE = "https://api.spotify.com/v1/me/player/shuffle";
 
-/**
-const mysql = require('mysql');
-const connection = mysql.createConnection({
-    host: 'localhost',
-    user: 'root',
-    password: '',
-    database: 'test'
-})
+//================================================================================
 
-connection.connect(function(err) {
-    if (err) {
-        console.error("Error connecting: " + err.stack);
-        return;
-    }
-    console.log("Connected as id " + connection.threadId);
-})
-*/
+//===================================================================================
 
 function onPageLoad(){
     if ( window.location.search.length > 0 ){
@@ -68,7 +54,7 @@ function onPageLoad(){
 			//nextFourSongs();
         }
     }
-    refreshRadioButtons();
+    //refreshRadioButtons();
 }
 
 function handleRedirect(){
@@ -94,15 +80,17 @@ function requestAuthorization(){
     //localStorage.setItem("client_secret", client_secret); // In a real app you should not expose your client_secret to the user
 	//client_id = client_id;
 	//client_secret = client_secret;
+    adminPassword = document.getElementById("adminPassword").value;
 
-
-    let url = AUTHORIZE;
-    url += "?client_id=" + client_id;
-    url += "&response_type=code";
-    url += "&redirect_uri=" + encodeURI(redirect_uri);
-    url += "&show_dialog=true";
-    url += "&scope=user-read-private user-read-email user-modify-playback-state user-read-playback-position user-library-read streaming user-read-playback-state user-read-recently-played playlist-read-private";
-    window.location.href = url; // Show Spotify's authorization screen
+    if ( adminPassword == "Password") {
+        let url = AUTHORIZE;
+        url += "?client_id=" + client_id;
+        url += "&response_type=code";
+        url += "&redirect_uri=" + encodeURI(redirect_uri);
+        url += "&show_dialog=true";
+        url += "&scope=user-read-private user-read-email user-modify-playback-state user-read-playback-position user-library-read streaming user-read-playback-state user-read-recently-played playlist-read-private";
+        window.location.href = url; // Show Spotify's authorization screen
+    }
 }
 
 function fetchAccessToken( code ){
