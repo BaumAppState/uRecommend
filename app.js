@@ -11,6 +11,8 @@ var radioButtons = [];
 var intervalId = "";
 var currentSongProgress;
 var currentSongId = "";
+var oldSongId = "";
+var newSongId = "";
 var songOneId = "";
 var songTwoId = "";
 var songThreeId = "";
@@ -30,7 +32,164 @@ const TRACKS = "https://api.spotify.com/v1/playlists/{{PlaylistId}}/tracks";
 const CURRENTLYPLAYING = "https://api.spotify.com/v1/me/player/currently-playing";
 const SHUFFLE = "https://api.spotify.com/v1/me/player/shuffle";
 
-//================================================================================
+/**
+//=================Firebase Database================================================
+
+const firebaseConfig = {
+    apiKey: "AIzaSyATpX4Cx9va_x3GOkzkmWvdVXh6bIBxyno",
+    authDomain: "urecommend-database.firebaseapp.com",
+    databaseURL: "https://urecommend-database-default-rtdb.firebaseio.com",
+    projectId: "urecommend-database",
+    storageBucket: "urecommend-database.appspot.com",
+    messagingSenderId: "10648349121",
+    appId: "1:10648349121:web:afdb5b19e14abd95a4e740"
+};
+
+//initialize firebase
+firebase.initializeApp(firebaseConfig);
+
+//reference database
+const urecDatabase = firebase.database().ref('urecDatabase');
+
+function addVoteBlue() {
+    createVoteLog();
+    console.log("+1 vote for Blue");
+}
+
+const createVoteLog = () => {
+    var newVoteLog = urecDatabase.push();
+
+    newVoteLog.set({
+            blueCount: 0,
+            yellowCount: 0,
+            redCount: 0,
+            purpleCount: 0
+    });
+}
+*/
+
+const firebaseConfig = {
+    apiKey: "AIzaSyATpX4Cx9va_x3GOkzkmWvdVXh6bIBxyno",
+    authDomain: "urecommend-database.firebaseapp.com",
+    databaseURL: "https://urecommend-database-default-rtdb.firebaseio.com",
+    projectId: "urecommend-database",
+    storageBucket: "urecommend-database.appspot.com",
+    messagingSenderId: "10648349121",
+    appId: "1:10648349121:web:afdb5b19e14abd95a4e740"
+};
+
+//const app = initializeApp(firebaseConfig);
+
+firebase.initializeApp(firebaseConfig);
+
+var urecDB = firebase.database();
+
+//const urecDB = app.database();
+
+/**
+urecDB.ref("voteLog").set({
+    blueCount: 0,
+    yellowCount: 0,
+    redCount: 0,
+    purpleVote: 0
+});
+*/
+
+function resetVotes() {
+    urecDB.ref("voteLog").set({
+        blueCount: 0,
+        yellowCount: 0,
+        redCount: 0,
+        purpleCount: 0
+    });
+}
+
+function voteForBlue() {
+    document.querySelectorAll('.button').forEach(function(element) {
+        element.classList.add('grey');
+        element.onclick = null;
+    });
+
+    sessionStorage.setItem("lastvotedId", currentSongId);
+    urecDB.ref("voteLog/blueCount").transaction(function(currentCount) {
+        return (currentCount || 0) + 1;
+    });
+    alert("Your vote for Blue has been counted.");
+}
+
+function voteForYellow() {
+	document.querySelectorAll('.button').forEach(function(element) {
+        element.classList.add('grey');
+        element.onclick = null;
+    });
+    
+    sessionStorage.setItem("lastvotedId", currentSongId);
+    urecDB.ref("voteLog/yellowCount").transaction(function(currentCount) {
+        return (currentCount || 0) + 1;
+    });
+    alert("Your vote for Yellow has been counted.");
+}
+
+function voteForRed() {
+	document.querySelectorAll('.button').forEach(function(element) {
+        element.classList.add('grey');
+        element.onclick = null;
+    });
+    
+    sessionStorage.setItem("lastvotedId", currentSongId);
+    urecDB.ref("voteLog/redCount").transaction(function(currentCount) {
+        return (currentCount || 0) + 1;
+    });
+    alert("Your vote for Red has been counted.");
+}
+
+function voteForPurple() {
+	document.querySelectorAll('.button').forEach(function(element) {
+        element.classList.add('grey');
+        element.onclick = null;
+    });
+    
+    sessionStorage.setItem("lastvotedId", currentSongId);
+    urecDB.ref("voteLog/purpleCount").transaction(function(currentCount) {
+        return (currentCount || 0) + 1;
+    });
+    alert("Your vote for Purple has been counted.");
+}
+
+function getWinningColor(callback) {
+    urecDB.ref("voteLog").once("value", function(snapshot) {
+        var voteCounts = snapshot.val();
+        var winningColor = null;
+        var highestCount = 0;
+        for (var color in voteCounts) {
+            if (voteCounts[color] > highestCount) {
+                highestCount = voteCounts[color];
+                winningColor = color;
+            }
+        }
+        callback(winningColor);
+    });
+}
+
+function winnerToQueue(winningColor) {
+    switch (winningColor) {
+        case "blueCount":
+            songOneToQueue();
+            break;
+        case "yellowCount":
+            songTwoToQueue();
+            break;
+        case "redCount":
+            songThreeToQueue();
+            break;
+        case "purpleCount":
+            songFourToQueue();
+            break;
+        default:
+            console.log("Invalid winning color: " + winningColor);
+    }
+    reshuffleSongs();
+}
 
 //===================================================================================
 
@@ -48,7 +207,6 @@ function onPageLoad(){
             //Has access token so present currently playing/polling section
             document.getElementById("currentPollSection").style.display = 'block';  
             refreshDevices();
-            refreshPlaylists();
             //currentlyPlaying();
 			intervalId = setInterval(currentlyPlaying, 1000); //continuously updates every 2000 ms
 			//nextFourSongs();
@@ -148,7 +306,6 @@ function handleDevicesResponse(){
     if ( this.status == 200 ){
         var data = JSON.parse(this.responseText);
         console.log(data);
-        removeAllItems( "devices" );
         data.devices.forEach(item => addDevice(item));
     }
     else if ( this.status == 401 ){
@@ -178,27 +335,6 @@ function callApi(method, url, body, callback){
     xhr.setRequestHeader('Authorization', 'Bearer ' + access_token);
     xhr.send(body);
     xhr.onload = callback;
-}
-
-function refreshPlaylists(){
-    callApi( "GET", PLAYLISTS, null, handlePlaylistsResponse );
-}
-
-function handlePlaylistsResponse(){
-    if ( this.status == 200 ){
-        var data = JSON.parse(this.responseText);
-        console.log(data);
-        removeAllItems( "playlists" );
-        data.items.forEach(item => addPlaylist(item));
-        document.getElementById('playlists').value=currentPlaylist;
-    }
-    else if ( this.status == 401 ){
-        refreshAccessToken()
-    }
-    else {
-        console.log(this.responseText);
-        alert(this.responseText);
-    }
 }
 
 function play(){
@@ -248,7 +384,7 @@ function handleCurrentlyPlayingResponse(){
             document.getElementById("trackTitle").innerHTML = data.item.name;
             document.getElementById("trackArtist").innerHTML = data.item.artists[0].name;
             currentSongId = data.item.id;
-			updateProgressBar();
+			updateProgress();
 			nextFourSongs();
 
             //Ensures that if someone has already voted, the buttons won't be clickable if the user refreshes the page
@@ -362,17 +498,30 @@ function handleNextFourSongsResponse(){
     }
 }
 
-function updateProgressBar() {
-	callApi( "GET", PLAYER, null, handleUpdateProgressBarResponse );
+function updateProgress() {
+	callApi( "GET", PLAYER, null, handleUpdateProgressResponse );
 }
 
-function handleUpdateProgressBarResponse() {
+var winningColor = "";
+function handleUpdateProgressResponse() {
 	if ( this.status == 200 ){
         var data = JSON.parse(this.responseText);
         console.log(data);
         var progress_ms = data.progress_ms;
 		var duration_ms = data.item.duration_ms;
 		var percentTime = (progress_ms / duration_ms) * 100;
+        newSongId = currentSongId;
+
+        var remaining_ms = duration_ms - progress_ms;
+        //once there's less than 1.5 seconds left, queue the winner
+        if (remaining_ms < 1500 ){
+            getWinningColor(winnerToQueue);
+        }
+        //once the next song starts, reset the votes
+        if (oldSongId !== newSongId ){
+            resetVotes();
+        }
+        oldSongId = newSongId;
 		document.getElementById("progress-bar").style.width = percentTime + "%";    }
     else if ( this.status == 401 ){
         refreshAccessToken()
@@ -428,6 +577,7 @@ function reshuffleSongs() {
     intervalId = setInterval(currentlyPlaying, 1000); //restart continuous currentlyPlaying()
 }
 
+/**
 function voteForBlue() {
     document.querySelectorAll('.button').forEach(function(element) {
         element.classList.add('grey');
@@ -435,6 +585,9 @@ function voteForBlue() {
     });
 
     sessionStorage.setItem("lastvotedId", currentSongId);
+    urecDB.ref("voteLog/blueCount").transaction(function(currentCount) {
+        return (currentCount || 0) + 1;
+    });
     alert("Your vote for Blue has been counted.");
 }
 
@@ -445,6 +598,9 @@ function voteForYellow() {
     });
     
     sessionStorage.setItem("lastvotedId", currentSongId);
+    urecDB.ref("voteLog/yellowCount").transaction(function(currentCount) {
+        return (currentCount || 0) + 1;
+    });
     alert("Your vote for Yellow has been counted.");
 }
 
@@ -455,6 +611,9 @@ function voteForRed() {
     });
     
     sessionStorage.setItem("lastvotedId", currentSongId);
+    urecDB.ref("voteLog/redCount").transaction(function(currentCount) {
+        return (currentCount || 0) + 1;
+    });
     alert("Your vote for Red has been counted.");
 }
 
@@ -465,5 +624,9 @@ function voteForPurple() {
     });
     
     sessionStorage.setItem("lastvotedId", currentSongId);
+    urecDB.ref("voteLog/purpleCount").transaction(function(currentCount) {
+        return (currentCount || 0) + 1;
+    });
     alert("Your vote for Purple has been counted.");
 }
+*/

@@ -68,11 +68,11 @@ body {
 }
 
 .yellow {
-    background-color: #FFFE2E;
+    background-color: #ffff00;
 }
 
 .yellow:hover {
-    background-color: #CCCB24
+    background-color: #caca00
 }
 
 .red {
@@ -84,11 +84,11 @@ body {
 }
 
 .purple {
-    background-color: #FA2EFF;
+    background-color: #da29dd;
 }
 
 .purple:hover {
-    background-color: #C824CC
+    background-color: #8e1c90
 }
 
 .grey {
