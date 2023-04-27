@@ -52,11 +52,13 @@ body {
     font-size: 1.2em;
     font-weight: bold;
     margin: 20px 0;
+    color: black;
 }
 
 .button .artist {
     font-size: 1em;
     margin: 0px 0;
+    color: black;
 }
 
 .blue {
