@@ -6,6 +6,7 @@ var client_secret = "5f2d1466b27c4a3a966c38721e273f2e";
 
 var access_token = null;
 var refresh_token = null;
+var percentTime;
 var currentPlaylist = "";
 var radioButtons = [];
 var intervalId = "";
@@ -17,6 +18,7 @@ var songOneId = "";
 var songTwoId = "";
 var songThreeId = "";
 var songFourId = "";
+var hasQueuedWinner = false;
 
 const AUTHORIZE = "https://accounts.spotify.com/authorize"
 const TOKEN = "https://accounts.spotify.com/api/token";
@@ -32,8 +34,8 @@ const TRACKS = "https://api.spotify.com/v1/playlists/{{PlaylistId}}/tracks";
 const CURRENTLYPLAYING = "https://api.spotify.com/v1/me/player/currently-playing";
 const SHUFFLE = "https://api.spotify.com/v1/me/player/shuffle";
 
-/**
-//=================Firebase Database================================================
+
+//=================Firebase Database Configuration============================
 
 const firebaseConfig = {
     apiKey: "AIzaSyATpX4Cx9va_x3GOkzkmWvdVXh6bIBxyno",
@@ -44,57 +46,12 @@ const firebaseConfig = {
     messagingSenderId: "10648349121",
     appId: "1:10648349121:web:afdb5b19e14abd95a4e740"
 };
-
-//initialize firebase
-firebase.initializeApp(firebaseConfig);
-
-//reference database
-const urecDatabase = firebase.database().ref('urecDatabase');
-
-function addVoteBlue() {
-    createVoteLog();
-    console.log("+1 vote for Blue");
-}
-
-const createVoteLog = () => {
-    var newVoteLog = urecDatabase.push();
-
-    newVoteLog.set({
-            blueCount: 0,
-            yellowCount: 0,
-            redCount: 0,
-            purpleCount: 0
-    });
-}
-*/
-
-const firebaseConfig = {
-    apiKey: "AIzaSyATpX4Cx9va_x3GOkzkmWvdVXh6bIBxyno",
-    authDomain: "urecommend-database.firebaseapp.com",
-    databaseURL: "https://urecommend-database-default-rtdb.firebaseio.com",
-    projectId: "urecommend-database",
-    storageBucket: "urecommend-database.appspot.com",
-    messagingSenderId: "10648349121",
-    appId: "1:10648349121:web:afdb5b19e14abd95a4e740"
-};
-
-//const app = initializeApp(firebaseConfig);
 
 firebase.initializeApp(firebaseConfig);
 
 var urecDB = firebase.database();
 
-//const urecDB = app.database();
-
-/**
-urecDB.ref("voteLog").set({
-    blueCount: 0,
-    yellowCount: 0,
-    redCount: 0,
-    purpleVote: 0
-});
-*/
-
+//=================Database accessors and mutators============================
 function resetVotes() {
     urecDB.ref("voteLog").set({
         blueCount: 0,
@@ -186,14 +143,19 @@ function winnerToQueue(winningColor) {
             songFourToQueue();
             break;
         default:
-            console.log("Invalid winning color: " + winningColor);
+            songOneToQueue();
+            break;
     }
-    reshuffleSongs();
 }
 
 //===================================================================================
 
-function onPageLoad(){
+function onPageLoad() {
+    document.getElementById("currentPollSection").style.display = 'block';
+    setInterval(buildPage, 1000);
+}
+
+function onPageLoadAdmin(){
     if ( window.location.search.length > 0 ){
         handleRedirect();
     }
@@ -207,12 +169,9 @@ function onPageLoad(){
             //Has access token so present currently playing/polling section
             document.getElementById("currentPollSection").style.display = 'block';  
             refreshDevices();
-            //currentlyPlaying();
-			intervalId = setInterval(currentlyPlaying, 1000); //continuously updates every 2000 ms
-			//nextFourSongs();
+			intervalId = setInterval(currentlyPlayingAdmin, 1000); //continuously updates every 1000 ms
         }
     }
-    //refreshRadioButtons();
 }
 
 function handleRedirect(){
@@ -232,15 +191,9 @@ function getCode(){
 }
 
 function requestAuthorization(){
-    //client_id = document.getElementById("clientId").value;
-    //client_secret = document.getElementById("clientSecret").value;
-    //localStorage.setItem("client_id", client_id);
-    //localStorage.setItem("client_secret", client_secret); // In a real app you should not expose your client_secret to the user
-	//client_id = client_id;
-	//client_secret = client_secret;
     adminPassword = document.getElementById("adminPassword").value;
 
-    if ( adminPassword == "Password") {
+    if ( adminPassword == "Edward Nigma") {
         let url = AUTHORIZE;
         url += "?client_id=" + client_id;
         url += "&response_type=code";
@@ -357,10 +310,10 @@ function play(){
 function handleApiResponse(){
     if ( this.status == 200){
         console.log(this.responseText);
-        setTimeout(currentlyPlaying, 2000);
+        setTimeout(currentlyPlayingAdmin, 2000);
     }
     else if ( this.status == 204 ){
-        setTimeout(currentlyPlaying, 2000);
+        setTimeout(currentlyPlayingAdmin, 2000);
     }
     else if ( this.status == 401 ){
         refreshAccessToken()
@@ -371,11 +324,11 @@ function handleApiResponse(){
     }    
 }
 
-function currentlyPlaying() {
-    callApi( "GET", PLAYER + "?market=US", null, handleCurrentlyPlayingResponse );
+function currentlyPlayingAdmin() {
+    callApi( "GET", PLAYER + "?market=US", null, handleCurrentlyPlayingResponseAdmin );
 }
 
-function handleCurrentlyPlayingResponse(){
+function handleCurrentlyPlayingResponseAdmin(){
     if ( this.status == 200 ){
         var data = JSON.parse(this.responseText);
         console.log(data);
@@ -384,8 +337,19 @@ function handleCurrentlyPlayingResponse(){
             document.getElementById("trackTitle").innerHTML = data.item.name;
             document.getElementById("trackArtist").innerHTML = data.item.artists[0].name;
             currentSongId = data.item.id;
-			updateProgress();
-			nextFourSongs();
+
+            var progress_ms = data.progress_ms;
+		    var duration_ms = data.item.duration_ms;
+
+            urecDB.ref("songInfo/songCurrentInfo").set({
+                image: data.item.album.images[0].url,
+                title: data.item.name,
+                artist: data.item.artists[0].name,
+                id: data.item.id,
+                percentTime: (progress_ms / duration_ms) * 100
+            });
+			updateProgressAdmin();
+			nextFourSongsAdmin();
 
             //Ensures that if someone has already voted, the buttons won't be clickable if the user refreshes the page
             if ( sessionStorage.getItem("lastvotedId") != null && currentSongId == sessionStorage.getItem("lastvotedId") ) {
@@ -397,10 +361,10 @@ function handleCurrentlyPlayingResponse(){
                 document.querySelectorAll('.button').forEach(function(element) {
                     element.classList.remove('grey');
                 });
-                //document.getElementById("blueButt").addEventListener("click", voteForBlue());
-                //document.getElementById("yellowButt").addEventListener("click", voteForYellow());
-                //document.getElementById("redButt").addEventListener("click", voteForRed());
-                //document.getElementById("purpleButt").addEventListener("click", voteForPurple());
+                document.getElementById("blueButt").addEventListener("click", voteForBlue);
+                document.getElementById("yellowButt").addEventListener("click", voteForYellow);
+                document.getElementById("redButt").addEventListener("click", voteForRed);
+                document.getElementById("purpleButt").addEventListener("click", voteForPurple);
             }
         }
 
@@ -430,6 +394,24 @@ function handleCurrentlyPlayingResponse(){
     }
 }
 
+function buildPage() {
+    buildSongs();
+    if ( sessionStorage.getItem("lastvotedId") != null && currentSongId == sessionStorage.getItem("lastvotedId") ) {
+        document.querySelectorAll('.button').forEach(function(element) {
+            element.classList.add('grey');
+            element.onclick = null;
+        });
+    } else {
+        document.querySelectorAll('.button').forEach(function(element) {
+            element.classList.remove('grey');
+        });
+        document.getElementById("blueButt").addEventListener("click", voteForBlue);
+        document.getElementById("yellowButt").addEventListener("click", voteForYellow);
+        document.getElementById("redButt").addEventListener("click", voteForRed);
+        document.getElementById("purpleButt").addEventListener("click", voteForPurple);
+    }
+}
+
 function deactiveButtons() {
 
 }
@@ -438,12 +420,12 @@ function activateButtons() {
 
 }
 
-function nextFourSongs(){
-    callApi( "GET", QUEUE, null, handleNextFourSongsResponse );
+function nextFourSongsAdmin(){
+    callApi( "GET", QUEUE, null, handleNextFourSongsResponseAdmin );
 }
 
 //Puts the next four songs in the queue onto the html as options to vote for
-function handleNextFourSongsResponse(){
+function handleNextFourSongsResponseAdmin(){
     if ( this.status == 200 ){
         var data = JSON.parse(this.responseText);
         console.log(data);
@@ -455,21 +437,45 @@ function handleNextFourSongsResponse(){
             document.getElementById("songOneTitle").innerHTML = data.queue[1].name;
             document.getElementById("songOneArtist").innerHTML = data.queue[1].artists[0].name;
 			songOneId = data.queue[1].id;
+            urecDB.ref("songInfo/songOneInfo").set({
+                image: data.queue[1].album.images[0].url,
+                title: data.queue[1].name,
+                artist: data.queue[1].artists[0].name,
+                id: data.queue[1].id
+            });
 
 			document.getElementById("songTwoImage").src = data.queue[2].album.images[0].url;
             document.getElementById("songTwoTitle").innerHTML = data.queue[2].name;
             document.getElementById("songTwoArtist").innerHTML = data.queue[2].artists[0].name;
 			songTwoId = data.queue[2].id;
+            urecDB.ref("songInfo/songTwoInfo").set({
+                image: data.queue[2].album.images[0].url,
+                title: data.queue[2].name,
+                artist: data.queue[2].artists[0].name,
+                id: data.queue[2].id
+            });
 
 			document.getElementById("songThreeImage").src = data.queue[3].album.images[0].url;
             document.getElementById("songThreeTitle").innerHTML = data.queue[3].name;
             document.getElementById("songThreeArtist").innerHTML = data.queue[3].artists[0].name;
 			songThreeId = data.queue[3].id;
+            urecDB.ref("songInfo/songThreeInfo").set({
+                image: data.queue[3].album.images[0].url,
+                title: data.queue[3].name,
+                artist: data.queue[3].artists[0].name,
+                id: data.queue[3].id
+            });
 
 			document.getElementById("songFourImage").src = data.queue[4].album.images[0].url;
             document.getElementById("songFourTitle").innerHTML = data.queue[4].name;
             document.getElementById("songFourArtist").innerHTML = data.queue[4].artists[0].name;
 			songFourId = data.queue[4].id;
+            urecDB.ref("songInfo/songFourInfo").set({
+                image: data.queue[4].album.images[0].url,
+                title: data.queue[4].name,
+                artist: data.queue[4].artists[0].name,
+                id: data.queue[4].id
+            });
         }
 
 
@@ -498,28 +504,68 @@ function handleNextFourSongsResponse(){
     }
 }
 
-function updateProgress() {
-	callApi( "GET", PLAYER, null, handleUpdateProgressResponse );
+function buildSongs(){
+    urecDB.ref("songInfo").on("value", function(snapshot) {
+        var songCurrentInfo = snapshot.val().songCurrentInfo;
+        var songOneInfo = snapshot.val().songOneInfo;
+        var songTwoInfo = snapshot.val().songTwoInfo;
+        var songThreeInfo = snapshot.val().songThreeInfo;
+        var songFourInfo = snapshot.val().songFourInfo;
+
+        document.getElementById("albumImage").src = songCurrentInfo.image;
+        document.getElementById("trackTitle").innerHTML = songCurrentInfo.title;
+        document.getElementById("trackArtist").innerHTML = songCurrentInfo.artist;
+        currentSongId = songCurrentInfo.id;
+        document.getElementById("progress-bar").style.width = songCurrentInfo.percentTime + "%";;
+      
+        document.getElementById("songOneImage").src = songOneInfo.image;
+        document.getElementById("songOneTitle").innerHTML = songOneInfo.title;
+        document.getElementById("songOneArtist").innerHTML = songOneInfo.artist
+		songOneId = songOneInfo.id;
+
+        document.getElementById("songTwoImage").src = songTwoInfo.image;
+        document.getElementById("songTwoTitle").innerHTML = songTwoInfo.title;
+        document.getElementById("songTwoArtist").innerHTML = songTwoInfo.artist;
+		songTwoId = songTwoInfo.id;
+      
+        document.getElementById("songThreeImage").src = songThreeInfo.image;
+        document.getElementById("songThreeTitle").innerHTML = songThreeInfo.title;
+        document.getElementById("songThreeArtist").innerHTML = songThreeInfo.artist;
+		songThreeId = songThreeInfo.id;
+      
+        document.getElementById("songFourImage").src = songFourInfo.image;
+        document.getElementById("songFourTitle").innerHTML = songFourInfo.title;
+        document.getElementById("songFourArtist").innerHTML = songFourInfo.artist;
+		songFourId = songFourInfo.id;
+      });
 }
 
-var winningColor = "";
-function handleUpdateProgressResponse() {
+function updateProgressAdmin() {
+	callApi( "GET", PLAYER, null, handleUpdateProgressResponseAdmin );
+}
+
+function handleUpdateProgressResponseAdmin() {
 	if ( this.status == 200 ){
         var data = JSON.parse(this.responseText);
         console.log(data);
         var progress_ms = data.progress_ms;
 		var duration_ms = data.item.duration_ms;
 		var percentTime = (progress_ms / duration_ms) * 100;
+
         newSongId = currentSongId;
 
         var remaining_ms = duration_ms - progress_ms;
-        //once there's less than 1.5 seconds left, queue the winner
-        if (remaining_ms < 1500 ){
+        //once there's less than 4 seconds left, queue the winner
+        //flag ensures that the function isn't called more than once
+        //since the whole function is being called continuously every second
+        if (remaining_ms < 4000 && hasQueuedWinner == false){
             getWinningColor(winnerToQueue);
+            hasQueuedWinner = true;
         }
         //once the next song starts, reset the votes
         if (oldSongId !== newSongId ){
             resetVotes();
+            hasQueuedWinner = false;
         }
         oldSongId = newSongId;
 		document.getElementById("progress-bar").style.width = percentTime + "%";    }
@@ -532,29 +578,32 @@ function handleUpdateProgressResponse() {
     }
 }
 
-function continuouslyUpdateCurrent() {
-	setInterval(currentlyPlaying(), 2000);
-}
-
 //Adds song one to the queue to be played next
 function songOneToQueue() {
     callApi( "POST", QUEUE + "?uri=spotify:track:" + songOneId, null, handleApiResponse );
-	reshuffleSongs();
+    //waits 2 seconds to make sure queue api call goes through first
+	setTimeout(reshuffleSongs(), 2000);
 }
 
 //Adds song two to the queue to be played next
 function songTwoToQueue() {
     callApi( "POST", QUEUE + "?uri=spotify:track:" + songTwoId, null, handleApiResponse );
+    //waits 2 seconds to make sure queue api call goes through first
+    setTimeout(reshuffleSongs(), 2000);
 }
 
 //Adds song three to the queue to be played next
 function songThreeToQueue() {
     callApi( "POST", QUEUE + "?uri=spotify:track:" + songThreeId, null, handleApiResponse );
+    //waits 2 seconds to make sure queue api call goes through first
+    setTimeout(reshuffleSongs(), 2000);
 }
 
 //Adds song four to the queue to be played next
 function songFourToQueue() {
     callApi( "POST", QUEUE + "?uri=spotify:track:" + songFourId, null, handleApiResponse );
+    //waits 2 seconds to make sure queue api call goes through first
+    setTimeout(reshuffleSongs(), 2000);
 }
 
 //Toggles shuffle setting to true
@@ -574,59 +623,5 @@ function reshuffleSongs() {
 	//Uses setTimeout to wait 1000ms (1 second) before setting shuffle back to true
 	//This is to ensure spotify has enough time to recieve the request and change the setting
 	setTimeout(shuffleTrue(), 1000);
-    intervalId = setInterval(currentlyPlaying, 1000); //restart continuous currentlyPlaying()
+    intervalId = setInterval(currentlyPlayingAdmin, 1000); //restart continuous currentlyPlaying()
 }
-
-/**
-function voteForBlue() {
-    document.querySelectorAll('.button').forEach(function(element) {
-        element.classList.add('grey');
-        element.onclick = null;
-    });
-
-    sessionStorage.setItem("lastvotedId", currentSongId);
-    urecDB.ref("voteLog/blueCount").transaction(function(currentCount) {
-        return (currentCount || 0) + 1;
-    });
-    alert("Your vote for Blue has been counted.");
-}
-
-function voteForYellow() {
-	document.querySelectorAll('.button').forEach(function(element) {
-        element.classList.add('grey');
-        element.onclick = null;
-    });
-    
-    sessionStorage.setItem("lastvotedId", currentSongId);
-    urecDB.ref("voteLog/yellowCount").transaction(function(currentCount) {
-        return (currentCount || 0) + 1;
-    });
-    alert("Your vote for Yellow has been counted.");
-}
-
-function voteForRed() {
-	document.querySelectorAll('.button').forEach(function(element) {
-        element.classList.add('grey');
-        element.onclick = null;
-    });
-    
-    sessionStorage.setItem("lastvotedId", currentSongId);
-    urecDB.ref("voteLog/redCount").transaction(function(currentCount) {
-        return (currentCount || 0) + 1;
-    });
-    alert("Your vote for Red has been counted.");
-}
-
-function voteForPurple() {
-	document.querySelectorAll('.button').forEach(function(element) {
-        element.classList.add('grey');
-        element.onclick = null;
-    });
-    
-    sessionStorage.setItem("lastvotedId", currentSongId);
-    urecDB.ref("voteLog/purpleCount").transaction(function(currentCount) {
-        return (currentCount || 0) + 1;
-    });
-    alert("Your vote for Purple has been counted.");
-}
-*/

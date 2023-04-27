@@ -7,7 +7,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-giJF6kkoqNQ00vy+HMDP7azOuL0xtbfIcaT9wjKHr8RbDVddVHyTfAAsrekwKmP1" crossorigin="anonymous">
     <link href="style.css" rel="stylesheet">
 </head>
-<body onload="onPageLoad()">
+<body onload="onPageLoadAdmin()">
     <div class="container">
         <div id="tokenSection" class="col text-center">
 			<h1>Admin must re-verify hosting account...</h1>
@@ -23,15 +23,23 @@
 						<a href="index.html">
 							<img id="headerLogo"src="/uRecommend_logo_tightcrop.jpg">
 						</a>
-						<h1>Currently Playing:</h1>
-                        <div class="d-flex flex-column align-items-center">
-                            <img id="albumImage" src="">
-							<div id="progress-bar-container">
-								<div id="progress-bar"></div>
+							<h1>[[ADMIN]] Currently Playing:</h1>
+                        	<div class="d-flex flex-column align-items-center">
+                        	    <img id="albumImage" src="">
+								<div id="progress-bar-container">
+									<div id="progress-bar"></div>
+								</div>
+                        	    <div id="trackTitle"></div>
+                        	    <div id="trackArtist"></div>
 							</div>
-                            <div id="trackTitle"></div>
-                            <div id="trackArtist"></div>
-						</div>
+							<!--
+                        <input type="button" class="btn btn-primary btn-sm mt-3" onclick="currentlyPlaying(); nextFourSongs();" value="Refresh Currently Playing">
+						<input type="button" class="btn btn-primary btn-sm mt-3" onclick="songOneToQueue(); reshuffleSongs();" value="Song One To Queue">
+						<input type="button" class="btn btn-primary btn-sm mt-3" onclick="songTwoToQueue(); reshuffleSongs();" value="Song Two To Queue">
+						<input type="button" class="btn btn-primary btn-sm mt-3" onclick="songThreeToQueue(); reshuffleSongs();" value="Song Three To Queue">
+						<input type="button" class="btn btn-primary btn-sm mt-3" onclick="songFourToQueue(); reshuffleSongs();" value="Song Four To Queue">
+						<input type="button" class="btn btn-primary btn-sm mt-3" onclick="reshuffleSongs();" value="Reshuffle Songs">
+						-->
 					</div>
                 </div>
             </div>
