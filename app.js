@@ -152,7 +152,7 @@ function winnerToQueue(winningColor) {
 
 function onPageLoad() {
     document.getElementById("currentPollSection").style.display = 'block';
-    setInterval(buildPage, 1000);
+    setInterval(buildPage, 2000);
 }
 
 function onPageLoadAdmin(){
@@ -169,7 +169,7 @@ function onPageLoadAdmin(){
             //Has access token so present currently playing/polling section
             document.getElementById("currentPollSection").style.display = 'block';  
             refreshDevices();
-			intervalId = setInterval(currentlyPlayingAdmin, 1000); //continuously updates every 1000 ms
+			intervalId = setInterval(currentlyPlayingAdmin, 2000); //continuously updates every 1000 ms
         }
     }
 }
@@ -623,5 +623,5 @@ function reshuffleSongs() {
 	//Uses setTimeout to wait 1000ms (1 second) before setting shuffle back to true
 	//This is to ensure spotify has enough time to recieve the request and change the setting
 	setTimeout(shuffleTrue(), 1000);
-    intervalId = setInterval(currentlyPlayingAdmin, 1000); //restart continuous currentlyPlaying()
+    intervalId = setInterval(currentlyPlayingAdmin, 2000); //restart continuous currentlyPlaying()
 }
