@@ -1,4 +1,4 @@
-var redirect_uri = "https://urecommend.up.railway.app";
+var redirect_uri = "https://urecommend.up.railway.app/adminPage.html";
 var cpuDeviceId = "6865a44f5e52deaa8b860e25ab6613f4d7a943f0"; 
 
 var client_id = "b1d853e60aac443fae77ccd132b71b04"; 
@@ -169,7 +169,7 @@ function onPageLoadAdmin(){
             //Has access token so present currently playing/polling section
             document.getElementById("currentPollSection").style.display = 'block';  
             refreshDevices();
-			intervalId = setInterval(currentlyPlayingAdmin, 2000); //continuously updates every 1000 ms
+			intervalId = setInterval(currentlyPlayingAdmin, 1000); //continuously updates every 1000 ms
         }
     }
 }
@@ -193,7 +193,7 @@ function getCode(){
 function requestAuthorization(){
     adminPassword = document.getElementById("adminPassword").value;
 
-    if ( adminPassword == "Edward Nigma") {
+    if ( adminPassword == "EdwardNigma") {
         let url = AUTHORIZE;
         url += "?client_id=" + client_id;
         url += "&response_type=code";
@@ -623,5 +623,5 @@ function reshuffleSongs() {
 	//Uses setTimeout to wait 1000ms (1 second) before setting shuffle back to true
 	//This is to ensure spotify has enough time to recieve the request and change the setting
 	setTimeout(shuffleTrue(), 1000);
-    intervalId = setInterval(currentlyPlayingAdmin, 2000); //restart continuous currentlyPlaying()
+    intervalId = setInterval(currentlyPlayingAdmin, 1000); //restart continuous currentlyPlaying()
 }
