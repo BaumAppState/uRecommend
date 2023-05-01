@@ -357,8 +357,12 @@ function handleCurrentlyPlayingResponseAdmin(){
             if ( sessionStorage.getItem("lastvotedId") != null && currentSongId == sessionStorage.getItem("lastvotedId") ) {
                 document.querySelectorAll('.button').forEach(function(element) {
                     element.classList.add('grey');
-                    element.onclick = null;
+                    //element.onclick = null;
                 });
+                document.getElementById("blueButt").removeEventListener("click", voteForBlue);
+                document.getElementById("yellowButt").removeEventListener("click", voteForYellow);
+                document.getElementById("redButt").removeEventListener("click", voteForRed);
+                document.getElementById("purpleButt").removeEventListener("click", voteForPurple);
             } else {
                 document.querySelectorAll('.button').forEach(function(element) {
                     element.classList.remove('grey');
@@ -401,8 +405,12 @@ function buildPage() {
     if ( sessionStorage.getItem("lastvotedId") != null && currentSongId == sessionStorage.getItem("lastvotedId") ) {
         document.querySelectorAll('.button').forEach(function(element) {
             element.classList.add('grey');
-            element.onclick = null;
+            //element.onclick = null;
         });
+        document.getElementById("blueButt").removeEventListener("click", voteForBlue);
+        document.getElementById("yellowButt").removeEventListener("click", voteForYellow);
+        document.getElementById("redButt").removeEventListener("click", voteForRed);
+        document.getElementById("purpleButt").removeEventListener("click", voteForPurple);
     } else {
         document.querySelectorAll('.button').forEach(function(element) {
             element.classList.remove('grey');
