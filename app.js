@@ -346,7 +346,9 @@ function handleCurrentlyPlayingResponseAdmin(){
                 title: data.item.name,
                 artist: data.item.artists[0].name,
                 id: data.item.id,
-                percentTime: (progress_ms / duration_ms) * 100
+                percentTime: (progress_ms / duration_ms) * 100,
+                timeRemaining_ms: (duration_ms - progress_ms),
+                progress_ms: progress_ms
             });
 			updateProgressAdmin();
 			nextFourSongsAdmin();
@@ -516,27 +518,50 @@ function buildSongs(){
         document.getElementById("trackTitle").innerHTML = songCurrentInfo.title;
         document.getElementById("trackArtist").innerHTML = songCurrentInfo.artist;
         currentSongId = songCurrentInfo.id;
-        document.getElementById("progress-bar").style.width = songCurrentInfo.percentTime + "%";;
-      
-        document.getElementById("songOneImage").src = songOneInfo.image;
-        document.getElementById("songOneTitle").innerHTML = songOneInfo.title;
-        document.getElementById("songOneArtist").innerHTML = songOneInfo.artist
-		songOneId = songOneInfo.id;
+        document.getElementById("progress-bar").style.width = songCurrentInfo.percentTime + "%";
 
-        document.getElementById("songTwoImage").src = songTwoInfo.image;
-        document.getElementById("songTwoTitle").innerHTML = songTwoInfo.title;
-        document.getElementById("songTwoArtist").innerHTML = songTwoInfo.artist;
-		songTwoId = songTwoInfo.id;
+        //Make the vote options go blank to avoid showing multiple different
+        //songs flash by while reshuffling
+        if(songCurrentInfo.timeRemaining_ms <= 5000 || songCurrentInfo.progress_ms <= 2000) {
+            document.getElementById("songOneImage").src = "";
+            document.getElementById("songOneTitle").innerHTML = "";
+            document.getElementById("songOneArtist").innerHTML = "";
+
+            document.getElementById("songTwoImage").src = "";
+            document.getElementById("songTwoTitle").innerHTML = "";
+            document.getElementById("songTwoArtist").innerHTML = "";
       
-        document.getElementById("songThreeImage").src = songThreeInfo.image;
-        document.getElementById("songThreeTitle").innerHTML = songThreeInfo.title;
-        document.getElementById("songThreeArtist").innerHTML = songThreeInfo.artist;
-		songThreeId = songThreeInfo.id;
+            document.getElementById("songThreeImage").src = "";
+            document.getElementById("songThreeTitle").innerHTML = "";
+            document.getElementById("songThreeArtist").innerHTML = "";
       
-        document.getElementById("songFourImage").src = songFourInfo.image;
-        document.getElementById("songFourTitle").innerHTML = songFourInfo.title;
-        document.getElementById("songFourArtist").innerHTML = songFourInfo.artist;
-		songFourId = songFourInfo.id;
+            document.getElementById("songFourImage").src = "";
+            document.getElementById("songFourTitle").innerHTML = "";
+            document.getElementById("songFourArtist").innerHTML = "";
+        }
+        else {
+      
+            document.getElementById("songOneImage").src = songOneInfo.image;
+            document.getElementById("songOneTitle").innerHTML = songOneInfo.title;
+            document.getElementById("songOneArtist").innerHTML = songOneInfo.artist;
+		    songOneId = songOneInfo.id;
+        
+
+            document.getElementById("songTwoImage").src = songTwoInfo.image;
+            document.getElementById("songTwoTitle").innerHTML = songTwoInfo.title;
+            document.getElementById("songTwoArtist").innerHTML = songTwoInfo.artist;
+		    songTwoId = songTwoInfo.id;
+      
+            document.getElementById("songThreeImage").src = songThreeInfo.image;
+            document.getElementById("songThreeTitle").innerHTML = songThreeInfo.title;
+            document.getElementById("songThreeArtist").innerHTML = songThreeInfo.artist;
+		    songThreeId = songThreeInfo.id;
+      
+            document.getElementById("songFourImage").src = songFourInfo.image;
+            document.getElementById("songFourTitle").innerHTML = songFourInfo.title;
+            document.getElementById("songFourArtist").innerHTML = songFourInfo.artist;
+		    songFourId = songFourInfo.id;
+        }
       });
 }
 
@@ -555,12 +580,14 @@ function handleUpdateProgressResponseAdmin() {
         newSongId = currentSongId;
 
         var remaining_ms = duration_ms - progress_ms;
-        //once there's less than 4 seconds left, queue the winner
+        //once there's less than 5 seconds left, queue the winner
         //flag ensures that the function isn't called more than once
         //since the whole function is being called continuously every second
-        if (remaining_ms < 4000 && hasQueuedWinner == false){
+        if (remaining_ms < 5000 && hasQueuedWinner == false){
             getWinningColor(winnerToQueue);
             hasQueuedWinner = true;
+
+            document.getElementById()
         }
         //once the next song starts, reset the votes
         if (oldSongId !== newSongId ){
@@ -620,8 +647,8 @@ function shuffleFalse() {
 function reshuffleSongs() {
     clearInterval(intervalId); //cancel the continuous updating of currentlyPlaying()
 	shuffleFalse();
-	//Uses setTimeout to wait 1000ms (1 second) before setting shuffle back to true
+	//Uses setTimeout to wait 3000ms (3 seconds) before setting shuffle back to true
 	//This is to ensure spotify has enough time to recieve the request and change the setting
-	setTimeout(shuffleTrue(), 1000);
+	setTimeout(shuffleTrue(), 3000);
     intervalId = setInterval(currentlyPlayingAdmin, 1000); //restart continuous currentlyPlaying()
 }
