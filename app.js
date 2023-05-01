@@ -193,7 +193,7 @@ function getCode(){
 function requestAuthorization(){
     adminPassword = document.getElementById("adminPassword").value;
 
-    if ( adminPassword == "EdwardNigma") {
+    if ( adminPassword == "Edward Nigma") {
         let url = AUTHORIZE;
         url += "?client_id=" + client_id;
         url += "&response_type=code";
