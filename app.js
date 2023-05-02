@@ -515,6 +515,17 @@ function handleNextFourSongsResponseAdmin(){
 }
 
 function buildSongs(){
+    var blueCount = 0;
+    var yellowCount = 0;
+    var redCount = 0;
+    var purpleCount = 0;
+    urecDB.ref("voteLog").on("value", function(snapshot) {
+        var voteCounts = snapshot.val();
+        blueCount = voteCounts.blueCount;
+        yellowCount = voteCounts.yellowCount;
+        redCount = voteCounts.redCount;
+        purpleCount = voteCounts.purpleCount;
+    });
     urecDB.ref("songInfo").on("value", function(snapshot) {
         var songCurrentInfo = snapshot.val().songCurrentInfo;
         var songOneInfo = snapshot.val().songOneInfo;
@@ -532,19 +543,31 @@ function buildSongs(){
         //songs flash by while reshuffling
         if(songCurrentInfo.timeRemaining_ms <= 5000 || songCurrentInfo.progress_ms <= 2000) {
             document.getElementById("songOneImage").src = "";
-            document.getElementById("songOneTitle").innerHTML = "";
+            if (blueCount == 1)
+                document.getElementById("songOneTitle").innerHTML = blueCount + " vote";
+            else
+                document.getElementById("songOneTitle").innerHTML = blueCount + " votes";
             document.getElementById("songOneArtist").innerHTML = "";
 
             document.getElementById("songTwoImage").src = "";
-            document.getElementById("songTwoTitle").innerHTML = "";
+            if (yellowCount == 1)
+                document.getElementById("songTwoTitle").innerHTML = yellowCount + " vote";
+            else
+                document.getElementById("songTwoTitle").innerHTML = yellowCount + " votes";
             document.getElementById("songTwoArtist").innerHTML = "";
       
             document.getElementById("songThreeImage").src = "";
-            document.getElementById("songThreeTitle").innerHTML = "";
+            if (redCount == 1)
+                document.getElementById("songThreeTitle").innerHTML = redCount + " vote";
+            else
+                document.getElementById("songThreeTitle").innerHTML = redCount + " votes";
             document.getElementById("songThreeArtist").innerHTML = "";
       
             document.getElementById("songFourImage").src = "";
-            document.getElementById("songFourTitle").innerHTML = "";
+            if (purpleCount == 1)
+                document.getElementById("songFourTitle").innerHTML = purpleCount + " vote";
+            else
+                document.getElementById("songFourTitle").innerHTML = purpleCount + " votes";
             document.getElementById("songFourArtist").innerHTML = "";
         }
         else {
