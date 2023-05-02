@@ -682,8 +682,8 @@ function shuffleFalse() {
 function reshuffleSongs() {
     clearInterval(intervalId); //cancel the continuous updating of currentlyPlaying()
 	shuffleFalse();
-	//Uses setTimeout to wait 3000ms (3 seconds) before setting shuffle back to true
+	//Uses setTimeout to wait 1000ms (1 second) before setting shuffle back to true
 	//This is to ensure spotify has enough time to recieve the request and change the setting
-	setTimeout(shuffleTrue(), 3000);
+	setTimeout(shuffleTrue, 1000);
     intervalId = setInterval(currentlyPlayingAdmin, 1000); //restart continuous currentlyPlaying()
 }
