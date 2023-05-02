@@ -138,10 +138,10 @@ h2 {
     background-color: #000000;
 }
 
-#songOneTitle, #songOneArtist,
-#songTwoTitle, #songTwoArtist,
-#songThreeTitle, #songThreeArtist,
-#songFourTitle, #songFourArtist {
+#songOneTitle, #songOneArtist, #songOneVotes,
+#songTwoTitle, #songTwoArtist, #songTwoVotes,
+#songThreeTitle, #songThreeArtist, #songThreeVotes,
+#songFourTitle, #songFourArtist, #songFourVotes{
     color: black;
     text-decoration: none;
 }
