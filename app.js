@@ -515,6 +515,17 @@ function handleNextFourSongsResponseAdmin(){
 }
 
 function buildSongs(){
+    var blueCount = 0;
+    var yellowCount = 0;
+    var redCount = 0;
+    var purpleCount = 0;
+    urecDB.ref("voteLog").on("value", function(snapshot) {
+        var voteCounts = snapshot.val();
+        blueCount = voteCounts.blueCount;
+        yellowCount = voteCounts.yellowCount;
+        redCount = voteCounts.redCount;
+        purpleCount = voteCounts.purpleCount;
+    });
     urecDB.ref("songInfo").on("value", function(snapshot) {
         var songCurrentInfo = snapshot.val().songCurrentInfo;
         var songOneInfo = snapshot.val().songOneInfo;
@@ -552,25 +563,41 @@ function buildSongs(){
             document.getElementById("songOneImage").src = songOneInfo.image;
             document.getElementById("songOneTitle").innerHTML = songOneInfo.title;
             document.getElementById("songOneArtist").innerHTML = songOneInfo.artist;
+            if (blueCount == 1)
+                document.getElementById("songOneVotes").innerHTML = blueCount + " VOTE";
+            else
+                document.getElementById("songOneVotes").innerHTML = blueCount + " VOTES";
 		    songOneId = songOneInfo.id;
         
 
             document.getElementById("songTwoImage").src = songTwoInfo.image;
             document.getElementById("songTwoTitle").innerHTML = songTwoInfo.title;
             document.getElementById("songTwoArtist").innerHTML = songTwoInfo.artist;
+            if (yellowCount == 1)
+                document.getElementById("songTwoVotes").innerHTML = yellowCount + " VOTE";
+            else
+                document.getElementById("songTwoVotes").innerHTML = yellowCount + " VOTES";
 		    songTwoId = songTwoInfo.id;
       
             document.getElementById("songThreeImage").src = songThreeInfo.image;
             document.getElementById("songThreeTitle").innerHTML = songThreeInfo.title;
             document.getElementById("songThreeArtist").innerHTML = songThreeInfo.artist;
+            if (redCount == 1)
+                document.getElementById("songThreeVotes").innerHTML = redCount + " VOTE";
+            else
+                document.getElementById("songThreeVotes").innerHTML = redCount + " VOTES";
 		    songThreeId = songThreeInfo.id;
       
             document.getElementById("songFourImage").src = songFourInfo.image;
             document.getElementById("songFourTitle").innerHTML = songFourInfo.title;
             document.getElementById("songFourArtist").innerHTML = songFourInfo.artist;
+            if (purpleCount == 1)
+                document.getElementById("songFourVotes").innerHTML = purpleCount + " VOTE";
+            else
+                document.getElementById("songFourVotes").innerHTML = purpleCount + " VOTES";
 		    songFourId = songFourInfo.id;
         }
-    });
+      });
 }
 
 function updateProgressAdmin() {
