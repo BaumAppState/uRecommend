@@ -1,14 +1,10 @@
 var redirect_uri = "https://urecommend.up.railway.app/adminPage.html";
 var cpuDeviceId = "6865a44f5e52deaa8b860e25ab6613f4d7a943f0"; 
-
 var client_id = "b1d853e60aac443fae77ccd132b71b04"; 
 var client_secret = "5f2d1466b27c4a3a966c38721e273f2e";
-
 var access_token = null;
 var refresh_token = null;
 var percentTime;
-var currentPlaylist = "";
-var radioButtons = [];
 var intervalId = "";
 var currentSongProgress;
 var currentSongId = "";
@@ -27,8 +23,6 @@ const QUEUE = "https://api.spotify.com/v1/me/player/queue";
 const CURRENTLYPLAYING = "https://api.spotify.com/v1/me/player/currently-playing";
 const SHUFFLE = "https://api.spotify.com/v1/me/player/shuffle";
 
-
-
 const firebaseConfig = {
     apiKey: "AIzaSyATpX4Cx9va_x3GOkzkmWvdVXh6bIBxyno",
     authDomain: "urecommend-database.firebaseapp.com",
@@ -43,6 +37,12 @@ firebase.initializeApp(firebaseConfig);
 
 var urecDB = firebase.database();
 
+/**
+ * This function resets the vote counts in the realtime database all
+ * back to 0.
+ * 
+ * @return {void}
+ */
 function resetVotes() {
     urecDB.ref("voteLog").set({
         blueCount: 0,
